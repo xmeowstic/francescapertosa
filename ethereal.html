@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pillendar — Case Study</title>
+<link href="https://unpkg.com/modern-normalize@2/modern-normalize.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0d10; --surface:#111218; --text:#f5f6f7; --muted:#a8abb1; --line:#1f222b;
+  --accent:#ff6020; --accent2:#5dd6ff; --ok:#93f1a0; --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+html[data-theme="light"]{
+  --bg:#f6f7f9; --surface:#ffffff; --text:#0e1116; --muted:#5f6570; --line:#e8eaef;
+  --shadow:0 10px 30px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro Text",Inter,"Helvetica Neue",Arial,Roboto,Segoe UI,sans-serif;line-height:1.5}
+a{color:inherit;text-decoration:none}
+.container{width:min(1220px,92vw); margin-inline:auto}
+
+/* ===== menu fluttuante ===== */
+.float-menu{position:fixed; left:50%; top:18px; translate:-50% 0; z-index:50; display:flex; gap:.35rem; padding:.5rem; border-radius:999px; background:#ffffff10; border:1px solid #ffffff22; backdrop-filter:blur(10px); box-shadow:var(--shadow)}
+html[data-theme="light"] .float-menu{background:#ffffffcc; border-color:#00000010}
+.chip{padding:.55rem 1rem; border-radius:999px; border:1px solid #ffffff1a; background:#ffffff0f; font-weight:600}
+.chip.active{outline:2px solid var(--accent); background:#ffffff25}
+.theme-toggle{width:42px; height:38px; display:grid; place-items:center; border-radius:999px; border:1px solid #ffffff22; background:#ffffff12}
+
+/* ===== hero ===== */
+.hero{position:relative; overflow:hidden; padding:clamp(60px,7vw,90px) 0 36px}
+.hero::before{content:""; position:absolute; inset:-20% -20% 0 -20%; z-index:-1;
+  background:radial-gradient(900px 480px at 50% -10%, color-mix(in oklab,var(--accent2) 28%, white 0%) 0%, transparent 60%),
+             radial-gradient(900px 520px at 50% 0%, color-mix(in oklab,var(--accent) 22%, white 0%) 0%, transparent 55%);}
+.hero h1{font-size:clamp(2.4rem,6.5vw,4rem); letter-spacing:-.02em; text-align:center; margin:.3rem 0 .4rem}
+.hero p.sub{color:var(--muted); text-align:center; margin:0 0 22px}
+.tag{display:inline-flex; gap:.5rem; align-items:center; padding:.45rem 1rem; border-radius:999px; border:1px solid #ffffff24; background:#ffffff10; margin-inline:auto}
+.tag .dot{width:8px; height:8px; border-radius:50%; background:var(--ok)}
+.meta-top{display:flex; justify-content:center; margin-top:8px}
+.btn-back{display:inline-flex; gap:.45rem; align-items:center; padding:.6rem .9rem; border-radius:999px; border:1px solid #ffffff20; background:#ffffff10}
+
+/* ===== gallery ===== */
+.gallery{display:grid; gap:18px; grid-template-columns:1.2fr 1fr; align-items:stretch; margin-top:26px}
+.gallery img{width:100%; height:100%; object-fit:cover; border-radius:22px; border:1px solid #ffffff18}
+html[data-theme="light"] .gallery img{border-color:#00000014}
+
+/* ===== layout contenuto ===== */
+.section{padding: clamp(36px,6vw,72px) 0; border-top:1px solid #ffffff16}
+.two-cols{display:grid; gap:32px; grid-template-columns: 320px 1fr}
+@media (max-width:1000px){.two-cols{grid-template-columns:1fr}}
+.aside{position:sticky; top:14vh; align-self:start}
+.aside .card{border:1px solid #ffffff18; background:linear-gradient(180deg,#ffffff0c,#ffffff06); border-radius:18px; padding:16px; box-shadow:var(--shadow)}
+.aside .row{margin:.35rem 0}
+.aside .label{color:var(--muted); font-size:.92rem}
+.aside .value{font-weight:700}
+.btn-link{display:inline-block; margin-top:8px; padding:.45rem .7rem; border:1px solid #ffffff22; border-radius:999px; background:#ffffff10}
+
+/* ===== typografia ===== */
+.h2{font-size:clamp(1.6rem,3vw,2.2rem); letter-spacing:-.01em; margin:0 0 .6rem}
+.lead{color:var(--muted)}
+
+/* ===== callout / brief ===== */
+.callout{border:1px solid #ffffff20; background:linear-gradient(180deg,#ffffff14,#ffffff08); border-radius:18px; padding:18px; box-shadow:var(--shadow)}
+html[data-theme="light"] .callout{border-color:#00000012; background:#00000006}
+
+/* ===== liste con check ===== */
+ul.check{list-style:none; padding:0; margin:0}
+ul.check li{margin:.5rem 0; display:flex; gap:.6rem; align-items:flex-start}
+ul.check li::before{content:""; width:18px; height:18px; border-radius:50%; border:2px solid var(--ok)}
+
+/* ===== snapshot design system ===== */
+.tokens{display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr))}
+.token{border:1px solid #ffffff18; border-radius:14px; padding:10px; background:#ffffff08}
+.swatch{width:100%; height:46px; border-radius:10px; margin-bottom:8px; border:1px solid #ffffff18}
+.badges{display:flex; gap:8px; flex-wrap:wrap}
+.badge{padding:.25rem .6rem; border:1px solid #ffffff22; border-radius:999px; background:#ffffff10; font-size:.9rem}
+
+/* ===== KPI ===== */
+.kpis{display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{border:1px solid #ffffff18; border-radius:18px; padding:16px; background:linear-gradient(180deg,#ffffff12,#ffffff06); text-align:center}
+.kpi b{font-size:1.6rem; display:block}
+
+/* ===== process cards ===== */
+.process{display:grid; gap:18px; grid-template-columns:1fr 1fr}
+@media (max-width:900px){.process{grid-template-columns:1fr}}
+.process .box{border:1px solid #ffffff18; border-radius:28px; padding:26px; background:linear-gradient(180deg,#5766a81f,#5766a80e)}
+html[data-theme="light"] .process .box{background:#e6edff}
+
+/* ===== footer compact ===== */
+.site-footer{border-top:1px solid var(--line); background:linear-gradient(180deg,transparent 0%, color-mix(in oklab,var(--surface) 94%, black 0%) 60%); padding: clamp(22px, 4.5vw, 40px) 0}
+.f-inner{display:flex; align-items:center; justify-content:space-between; gap:20px}
+@media (max-width:720px){.f-inner{flex-direction:column; align-items:flex-start; gap:14px}}
+.f-left{display:flex; gap:12px}
+.icon-btn{width:44px; height:44px; display:grid; place-items:center; border-radius:12px; border:1px solid #ffffff1f; background:#ffffff10}
+.icon-btn svg{width:22px; height:22px; color:var(--text)}
+.f-right{text-align:right} .f-name{font-weight:700} .f-meta{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav class="float-menu" id="floatMenu">
+  <a class="chip" href="index.html">Home</a>
+  <a class="chip" href="projects.html">Projects</a>
+  <a class="chip" href="about.html">About me</a>
+  <a class="chip" href="cv.pdf" target="_blank" rel="noopener">CV</a>
+  <button class="theme-toggle" id="themeToggle">☾</button>
+</nav>
+
+<header class="hero">
+  <div class="meta-top"><span class="tag"><span class="dot"></span> PATIENT SAFETY</span></div>
+  <h1>Pillendar</h1>
+  <p class="sub">Helping take your medications correctly, every time.</p>
+  <p class="sub"><a class="btn-back" href="projects.html">← Back to Projects</a></p>
+
+  <div class="container gallery">
+    <img src="https://picsum.photos/seed/pillendar-hero1/1400/900" alt="">
+    <img src="https://picsum.photos/seed/pillendar-hero2/1200/900" alt="">
+  </div>
+</header>
+
+<main class="container">
+  <!-- BRIEF -->
+  <section class="section">
+    <h2 class="h2">Brief</h2>
+    <div class="callout">
+      <p><b>Design challenge:</b> ridurre errori e dimenticanze nell’assunzione di farmaci per utenti +65 che gestiscono più terapie al giorno, integrando un <em>pillbox</em> fisico con un’app semplice e accessibile.</p>
+      <p><b>Outcome atteso:</b> un concept end-to-end con flow principali, UI ad alta fedeltà, motion di feedback e regole di design system.</p>
+    </div>
+  </section>
+
+  <!-- META / TEAM + OVERVIEW -->
+  <section class="section two-cols">
+    <aside class="aside">
+      <div class="card">
+        <div class="row"><div class="label">Industry</div><div class="value">Health / Medtech</div></div>
+        <div class="row"><div class="label">Deliverable</div><div class="value">Branding, Product &amp; UI</div></div>
+        <div class="row"><div class="label">Role</div><div class="value">Lead UX/UI, Prototyping</div></div>
+        <div class="row"><div class="label">Team</div><div class="value">Francesca Rossi, Marco Bianchi, Giulia Conti</div></div>
+        <!-- TODO: sostituisci i nomi con i colleghi reali -->
+        <div class="row"><div class="label">Timeline</div><div class="value">Mar–Jun 2024</div></div>
+        <div class="row"><div class="label">Tools</div><div class="value">Figma, Blender (mockup), After Effects</div></div>
+        <a class="btn-link" href="#" target="_blank" rel="noopener">Figma prototype ↗</a>
+      </div>
+    </aside>
+    <div>
+      <h2 class="h2">Project Overview</h2>
+      <p class="lead">Anche pazienti attenti dimenticano dosi o confondono farmaci. <b>Pillendar</b> combina un pillbox modulare con un’app che guida abitudini e riduce gli errori, offrendo conferme fisiche (click/tattili) e digitali (UI + notifiche contestuali).</p>
+
+      <h2 class="h2" style="margin-top:20px">Problem Statement</h2>
+      <ul class="check">
+        <li>Promemoria generici non considerano contesto, interazioni e caregiver.</li>
+        <li>Mancano feedback chiari “dose presa” con storico affidabile.</li>
+        <li>Interfacce mediche spesso sovraccariche e poco accessibili.</li>
+      </ul>
+
+      <h2 class="h2" style="margin-top:20px">Goals</h2>
+      <ul class="check">
+        <li>Ridurre miss/double dose con conferme fisiche + digitali.</li>
+        <li>UI chiara, ad alto contrasto, leggibile a distanza.</li>
+        <li>Supporto a caregiver e export per medico.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- RESEARCH INSIGHTS -->
+  <section class="section">
+    <h2 class="h2">Research insights</h2>
+    <div class="callout">
+      <ul class="check">
+        <li><b>Routine > tecnologia:</b> utenti anziani preferiscono gesti stabili; la UI deve rafforzarli, non rimpiazzarli.</li>
+        <li><b>Conferma fisica:</b> un gesto “chiudi-cella” aumenta la certezza della dose presa.</li>
+        <li><b>Caregiver loop:</b> notifiche semplici “ok/attenzione” riducono ansia e chiamate.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- BOARD / BRAND -->
+  <section class="section">
+    <h2 class="h2">Brand & UI snapshot</h2>
+    <div class="badges" style="margin-bottom:12px">
+      <span class="badge">Soft geometry</span><span class="badge">High contrast</span><span class="badge">Friendly tone</span><span class="badge">Motion as feedback</span>
+    </div>
+    <div class="tokens">
+      <div class="token"><div class="swatch" style="background:#5F78BB"></div><small>#5F78BB — Primary</small></div>
+      <div class="token"><div class="swatch" style="background:#dc6041"></div><small>#DC6041 — Accent</small></div>
+      <div class="token"><div class="swatch" style="background:#e5e3db"></div><small>#E5E3DB — Surface</small></div>
+      <div class="token"><div class="swatch" style="background:#080508"></div><small>#080508 — Text</small></div>
+    </div>
+  </section>
+
+  <!-- DESIGN DECISIONS & ARCHITECTURE -->
+  <section class="section two-cols">
+    <aside class="aside">
+      <div class="card">
+        <div class="row"><div class="label">Architecture</div><div class="value">Device ↔ App ↔ Caregiver</div></div>
+        <div class="row"><div class="label">Sync</div><div class="value">Local-first con export PDF</div></div>
+      </div>
+    </aside>
+    <div>
+      <h2 class="h2">Design decisions</h2>
+      <ul class="check">
+        <li><b>Calendario “macro”</b> per la giornata con pillole come task chiari → riduce carico cognitivo.</li>
+        <li><b>Stati forti</b> (da prendere / presa / persa) con colori e iconografia consistente.</li>
+        <li><b>Empty states</b> didattici per evitare stalli (es. prima configurazione farmaco).</li>
+      </ul>
+
+      <h2 class="h2" style="margin-top:20px">System architecture (high-level)</h2>
+      <ul class="check">
+        <li>Pillbox con sensore di apertura cella → invia evento all’app.</li>
+        <li>App valida orario + farmaco → aggiorna stato dose e storico.</li>
+        <li>Webhook (facoltativo) → caregiver riceve “ok/attenzione”.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section">
+    <h2 class="h2">Process</h2>
+    <div class="process">
+      <div class="box">
+        <h3>Research & problem identification</h3>
+        <ul class="check">
+          <li>Stakeholder map</li>
+          <li>Primary & secondary research</li>
+          <li>User flow & journey</li>
+          <li>Insight charts & affinity mapping</li>
+          <li>Personas</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Ideation & Design</h3>
+        <ul class="check">
+          <li>Concept sketching</li>
+          <li>Low & high fidelity prototyping</li>
+          <li>Heuristic evaluation</li>
+          <li>Design tokens & components</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACCESSIBILITY -->
+  <section class="section">
+    <h2 class="h2">Accessibility & compliance</h2>
+    <ul class="check">
+      <li>Contrasto minimo AA su testi primari; target touch ≥ 44px.</li>
+      <li>Supporto Dynamic Type e linguaggio semplice (CEFR B1).</li>
+      <li>Motion riducibile con <code>prefers-reduced-motion</code>.</li>
+    </ul>
+  </section>
+
+  <!-- USABILITY TESTING & KPI -->
+  <section class="section">
+    <h2 class="h2">Usability testing (pilot) & KPI</h2>
+    <div class="kpis">
+      <div class="kpi"><b>-38%</b><small>Missed dose nelle simulazioni di 2 settimane</small></div>
+      <div class="kpi"><b>+24%</b><small>Confidence nel “sapere cosa prendere”</small></div>
+      <div class="kpi"><b>95%</b><small>Task success primo onboarding</small></div>
+      <div class="kpi"><b>AA</b><small>Audit contrasto componenti chiave</small></div>
+    </div>
+  </section>
+
+  <!-- NEXT STEPS / CREDITS -->
+  <section class="section two-cols">
+    <aside class="aside">
+      <div class="card">
+        <div class="row"><div class="label">Links</div><div class="value"><a class="btn-link" href="#" target="_blank" rel="noopener">Prototype ↗</a></div></div>
+        <div class="row"><div class="label">Docs</div><div class="value"><a class="btn-link" href="#" target="_blank" rel="noopener">Specification ↗</a></div></div>
+      </div>
+    </aside>
+    <div>
+      <h2 class="h2">Next steps</h2>
+      <ul class="check">
+        <li>Wizard di importazione terapia da ricetta/foto.</li>
+        <li>Test longitudinali con caregiver reali (≥ 4 settimane).</li>
+        <li>Esportazione certificata per condivisione con medico.</li>
+      </ul>
+
+      <h2 class="h2" style="margin-top:20px">Credits</h2>
+      <p class="lead">Grazie a <b>Marco Bianchi</b> (research & testing) e <b>Giulia Conti</b> (branding & 3D mockup). <!-- Sostituisci con nomi reali --></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container f-inner">
+    <div class="f-left" aria-label="Social & contacts">
+      <a class="icon-btn" href="https://github.com/tuo-username" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.77.6-3.36-1.2-3.36-1.2-.46-1.18-1.12-1.49-1.12-1.49-.92-.62.07-.61.07-.61 1.02.07 1.56 1.06 1.56 1.06.9 1.55 2.37 1.1 2.95.84.09-.66.35-1.1.63-1.36-2.21-.25-4.54-1.1-4.54-4.91 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.57 9.57 0 0 1 12 6.8c.85 0 1.7.12 2.5.36 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.82-2.33 4.66-4.55 4.9.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48" fill="currentColor"/></svg>
+      </a>
+      <a class="icon-btn" href="https://www.linkedin.com/in/tuo-username" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5Zm.02 6.5H2V22h3V10ZM9 10H6v12h3v-6.5c0-1.73 1.5-3.15 3.23-3.15 1.6 0 2.77 1.02 2.77 3.08V22h3v-6.98C18 11.4 16.3 10 14.13 10c-1.6 0-2.67.78-3.13 1.58V10Z" fill="currentColor"/></svg>
+      </a>
+      <a class="icon-btn" href="https://www.behance.net/tuo-username" target="_blank" rel="noopener" aria-label="Behance">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9.2 11.4c.77-.33 1.27-1 1.27-1.93 0-1.73-1.23-2.47-3.12-2.47H3v9h4.72c2.1 0 3.48-.9 3.48-2.86 0-1.23-.58-2-2-2.74ZM14.5 6.5h4.3v1.3h-4.3z" fill="currentColor"/></svg>
+      </a>
+      <a class="icon-btn" href="mailto:hello@example.com" aria-label="Email">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6"/><path d="m3 8 9 6 9-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <div class="f-right">
+      <div class="f-name">Francesca Rossi — ©2025</div>
+      <div class="f-meta">Milano</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+/* Theme toggle */
+(function(){
+  const btn=document.getElementById('themeToggle');
+  const saved=localStorage.getItem('themeMode');
+  if(saved==='light') document.documentElement.setAttribute('data-theme','light');
+  const upd=()=>btn.textContent=document.documentElement.getAttribute('data-theme')==='light'?'☀︎':'☾';
+  upd();
+  btn.addEventListener('click',()=>{
+    const isLight=document.documentElement.getAttribute('data-theme')==='light';
+    document.documentElement.setAttribute('data-theme',isLight?'':'light');
+    localStorage.setItem('themeMode',isLight?'dark':'light');
+    upd();
+  });
+})();
+</script>
+</body>
+</html>
