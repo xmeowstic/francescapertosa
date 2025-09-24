@@ -74,14 +74,16 @@ html[data-theme="light"] .btn{ border-color:#00000010; background:#00000005 }
 .scroll-cue svg{animation:float 1.8s ease-in-out infinite}
 @keyframes float{50%{transform:translateY(6px)}}
 
-/* Hero blobs + scroll-driven animation */
+/* Hero blobs + scroll-driven animation (liberi su tutto l'hero) */
 .blobs{
-  position:absolute; inset:-10% -10% 0 -10%; pointer-events:none; z-index:-1;
+  position:absolute;
+  inset:-15% -15% -15% -15%; /* allargo per evitare tagli ai bordi */
+  pointer-events:none; z-index:-1;
   background:
-    radial-gradient(600px 600px at var(--mx,50%) calc(40% + var(--scroll)*-40px),
+    radial-gradient(700px 700px at var(--mx,50%) var(--my,50%),
       color-mix(in oklab, var(--accent) 70%, white 8%) 0%, transparent 60%),
-    radial-gradient(700px 700px at calc(100% - var(--mx,50%)) calc(80% - var(--my,50%)),
-      color-mix(in oklab, var(--accent-2) 70%, white 10%) 0%, transparent 55%);
+    radial-gradient(800px 800px at calc(100% - var(--mx,50%)) calc(100% - var(--my,50%)),
+      color-mix(in oklab, var(--accent-2) 70%, white 10%) 0%, transparent 60%);
   transform: scale(calc(1 + var(--scroll)*.05));
   filter: saturate(110%) contrast(105%) blur(calc(var(--scroll)*2px));
   transition:filter .2s linear;
@@ -484,24 +486,43 @@ const $$ = s => Array.from(document.querySelectorAll(s));
   $$('.reveal').forEach(el=>io.observe(el));
 })();
 
-/* ===== HERO BLOBS: mouse + scroll-driven animation ===== */
+/* ===== HERO BLOBS: mouse relativo all'hero + maggiore delay + nessun reset ===== */
 (function(){
   const root = document.documentElement;
-  let mx=.5, my=.4, tx=.5, ty=.4;
+  const heroEl = document.getElementById('hero');
+
+  let tx=.5, ty=.5, mx=.5, my=.5;          // target e corrente [0..1]
+  const SMOOTH = 0.06;                      // valore più piccolo = più delay
   const lerp=(a,b,t)=>a+(b-a)*t;
-  (function raf(){ mx=lerp(mx,tx,.08); my=lerp(my,ty,.08);
+
+  (function raf(){                          // aggiorna CSS vars con smoothing
+    mx = lerp(mx, tx, SMOOTH);
+    my = lerp(my, ty, SMOOTH);
     root.style.setProperty('--mx',(mx*100)+'%');
     root.style.setProperty('--my',(my*100)+'%');
     requestAnimationFrame(raf);
   })();
-  addEventListener('pointermove', e=>{ tx=e.clientX/innerWidth; ty=e.clientY/innerHeight }, {passive:true});
-  const onScroll=()=>{
-    const h=innerHeight, y=Math.min(Math.max(scrollY,0),h);
-    root.style.setProperty('--scroll',(y/h).toFixed(3)); // guida l'animazione anche con scroll manuale
-  };
-  addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
-  // click su "Scroll" -> smooth + anim
+  function updateFromEvent(e){              // coord relative all'hero
+    const r = heroEl.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top)  / r.height;
+    tx = Math.min(Math.max(x,0),1);
+    ty = Math.min(Math.max(y,0),1);
+  }
+
+  heroEl.addEventListener('pointermove', updateFromEvent, {passive:true});
+  heroEl.addEventListener('pointerenter', updateFromEvent, {passive:true});
+  // NESSUN reset su pointerleave → i cerchi restano dove sono
+
+  const onScroll=()=>{                      // effetto blur/scale con scroll
+    const h=innerHeight, y=Math.min(Math.max(scrollY,0),h);
+    root.style.setProperty('--scroll',(y/h).toFixed(3));
+  };
+  addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // click su "Scroll" -> smooth
   $('#scrollCue')?.addEventListener('click', (e)=>{
     e.preventDefault();
     document.getElementById('tools')?.scrollIntoView({behavior:'smooth', block:'start'});
